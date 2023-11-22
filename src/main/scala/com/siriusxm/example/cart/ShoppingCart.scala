@@ -1,9 +1,18 @@
 package com.siriusxm.example.cart
 
-import zio.{Ref, UIO}
+import zio.*
 
 class ShoppingCart(data: Ref[Entries]) {
   val TaxRate = 0.125d
+
+  def addLineItem(title: String, count: Int): IO[Error, Unit] =
+    ZIO.fromEither(
+    ProductLookupApi.priceLookup(title)
+      .map { price =>
+        addLineItem(ProductInfo(title, price), count)
+      }
+    )
+
   def addLineItem(product: ProductInfo, count: Int): UIO[Unit] =
     data.update(entries => {
       val existing = countOf(entries.get(product))
