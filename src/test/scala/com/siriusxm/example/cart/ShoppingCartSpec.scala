@@ -4,9 +4,11 @@ import zio.test.*
 import TestAspect.*
 
 object ShoppingCartSpec extends zio.test.ZIOSpecDefault {
+  val Tolerance = 1E-10 // for sum comparisons
+  val MaxPrice = 1E5
   override def spec: Spec[TestEnvironment with Scope, Any] = suite("Shopping Cart Suite")(
     test ("property test: random line items")(generateRandomLineItemsTest)
-    @@ parallel @@ repeat(Schedule.recurs(10))
+    @@ withLiveRandom @@ parallel @@ repeat(Schedule.recurs(10))
 
   )
 
@@ -15,11 +17,13 @@ object ShoppingCartSpec extends zio.test.ZIOSpecDefault {
       entries <- Ref.make(emptyEntries)
       cart = new ShoppingCart(entries)
       lineCounter <- Ref.make(0)
-      _ <- check(Gen.string, Gen.float, Gen.int) { (name, price, count) =>
+      subtot <- Ref.make(BigDecimal(0))
+      _ <- check(Gen.string, Gen.float.filter(p => p >= 0 && p < MaxPrice), Gen.int.filter(_>=0)) { (name, price, count) =>
         for
           _ <- cart.addLineItem(ProductInfo(name, price), count)
-          _ <- cart.addLineItem(ProductInfo(name, price), count*2) // duplicate
+          _ <- cart.addLineItem(ProductInfo(name, price),  100) // duplicate
           _ <- lineCounter.update(_ + 2)
+          _ <- subtot.update(_ +  price * (count + 100))
           currentLineCount <- lineCounter.get
           currentCartSize <- cart.numLines
         yield assertTrue(currentCartSize <= currentLineCount)
@@ -28,8 +32,13 @@ object ShoppingCartSpec extends zio.test.ZIOSpecDefault {
         for
           cartSize <- cart.numLines
           lineCount <- lineCounter.get
-          _ <- ZIO.logInfo(s"line-count: $lineCount, cart-size: $cartSize")
+          cartSubTot <- cart.subtotal
+          calcSubTot <- subtot.get
+          _ <- ZIO.logInfo(s"line-count: $lineCount, cart-size: $cartSize, subTot = $cartSubTot")
         yield
-          assertTrue(cartSize <= lineCount) // account for duplicate line-items merged
+          assertTrue(
+            cartSize <= lineCount
+            && (calcSubTot - cartSubTot).abs < Tolerance
+          )
     } yield result
 }
