@@ -1,8 +1,9 @@
 package com.example
 
-import cats.effect.IOApp
-import cats.effect.IO
+import zio.{ZIOAppDefault, Console, Clock}
 
-object Main extends IOApp.Simple {
-  def run: IO[Unit] = ???
+object Main extends ZIOAppDefault {
+  //noinspection TypeAnnotation
+  override def run = Clock.currentDateTime
+    .flatMap(dt => Console.printLine("Now is: " + dt))
 }
