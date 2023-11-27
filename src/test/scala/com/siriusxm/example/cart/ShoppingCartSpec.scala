@@ -8,8 +8,9 @@ object ShoppingCartSpec extends zio.test.ZIOSpecDefault {
   val MaxPrice = 1E5
   override def spec: Spec[TestEnvironment with Scope, Any] = suite("Shopping Cart Suite")(
     test("price lookup test") {
-      val priceXor = ProductLookupApi.priceLookup("frosties")
-      assertTrue(priceXor.isRight && (priceXor.getOrElse(0f) > 0f))
+      ProductLookupApi.priceLookup("frosties")
+        .map(p =>
+          assertTrue(p > 0f))
     },
 
     test ("property test: random line items")(generateRandomLineItemsTest)
@@ -23,12 +24,13 @@ object ShoppingCartSpec extends zio.test.ZIOSpecDefault {
       cart = new ShoppingCart(entries)
       lineCounter <- Ref.make(0)
       subtot <- Ref.make(BigDecimal(0))
-      _ <- check(Gen.string, Gen.float.filter(p => p >= 0 && p < MaxPrice), Gen.int.filter(_>=0)) { (name, price, count) =>
+      _ <- check(Gen.string, Gen.float.filter(p => p >= 0 && p < MaxPrice), Gen.int.filter(_>=0)) {
+        (name, price, count) =>
         for
           _ <- cart.addLineItem(ProductInfo(name, price), count)
           _ <- cart.addLineItem(ProductInfo(name, price),  100) // duplicate
           _ <- lineCounter.update(_ + 2)
-          _ <- subtot.update(_ +  price * (count + 100))
+          _ <- subtot.update(_ +  BigDecimal(price) * (count + 100))
           currentLineCount <- lineCounter.get
           currentCartSize <- cart.numLines
         yield assertTrue(currentCartSize <= currentLineCount)

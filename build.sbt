@@ -16,6 +16,7 @@ lazy val root = project
     // Compile scope
     libraryDependencies ++= Seq(
       "com.softwaremill.sttp.client4" %% "zio-json" % V.sttp,
+      "com.softwaremill.sttp.client4" %% "zio" % V.sttp,
 
       // Syncronous JDBC Modules
       "io.getquill" %% "quill-jdbc-zio" % V.quill
