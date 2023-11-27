@@ -9,6 +9,31 @@ object ShoppingCartSpec extends zio.test.ZIOSpecDefault {
   val Tolerance = 0 // for sum comparisons
   val MaxPrice = 1E5
   override def spec: Spec[TestEnvironment with Scope, Any] = suite("Shopping Cart Suite")(
+    test("ReadMe sample data test") {
+      for
+        cart <- ShoppingCart.newCart
+        _ <- cart.addLineItem("cornflakes", 2)
+        _ <- cart.addLineItem("weetabix", 1)
+        subtotal <- cart.subtotal
+        tax <- cart.taxPayable
+        total <- cart.totalPayable
+      yield assertTrue((subtotal, tax, total) == (15.02, 1.88, 16.90))
+      /*
+      Add
+      2 × cornflakes
+      @2.52 each
+      Add
+      1 × weetabix
+      @9.98 each
+      Subtotal = 15.02
+      Tax = 1.88
+      Total = 16.90
+       */
+    },
+
+    test ("property test: random line items")(generateRandomLineItemsTest)
+    @@ withLiveRandom @@ parallel @@ repeat(Schedule.recurs(10)),
+
     test("price lookup test: success") {
       ProductLookupApi.priceLookup("frosties")
         .map(p =>
@@ -20,9 +45,14 @@ object ShoppingCartSpec extends zio.test.ZIOSpecDefault {
       result.isFailure.flatMap(assertTrue(_))
     },
 
-    test ("property test: random line items")(generateRandomLineItemsTest)
-    @@ withLiveRandom @@ parallel @@ repeat(Schedule.recurs(10)),
-
+    test("attempt to change price in the middle of cart") {
+      val result = for
+        cart <- ShoppingCart.newCart
+        _ <- cart.addLineItem(ProductInfo("pencil", 1.0), 5)
+        _ <- cart.addLineItem(ProductInfo("pencil", 2.0), 5)
+      yield ()
+      result.isFailure.flatMap(assertTrue(_))
+    },
   )
 
   private def generateRandomLineItemsTest =

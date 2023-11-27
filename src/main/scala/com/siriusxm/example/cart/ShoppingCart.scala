@@ -49,11 +49,13 @@ class ShoppingCart(data: Ref[ShoppingCart.Entries]) {
   yield subtot.setScale(2, RoundingMode)
 
   def taxPayable: UIO[BigDecimal] = subtotal.map(_ * TaxRate)
+    .map(_.setScale(2, RoundingMode))
 
   def totalPayable: UIO[BigDecimal] = for
     subtot <- this.subtotal
     tax <- this.taxPayable
-  yield subtot + tax
+  yield (subtot + tax)
+    .setScale(2, RoundingMode)
 
   def numLines: UIO[Int] = data.get.map(_.size)
 }
