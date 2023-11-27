@@ -1,23 +1,18 @@
-## Instructions for the assignment
-1. Clone this repository on your machine.
-2. Use your IDE of choice to complete the assignment.
-3. When you are done with the solution and have pushed it to the repo, you can notify us that it was completed.
+## Shopping Cart
+Implemented using functional scala with zio and sttp libraries
 
-## Assignment Details
-We will be using a simple shopping cart, similar to what you would see on any e-commerce website, as the domain for this problem.
+### Testing
+```shell
+    > sbt test
+```
+### Design Decisions
+* Shopping cart stored in memory using `Ref[T]` which is modified atomically and so
+  is thread-safe
+* Price data is directly fetched from URLs everytime and not cached
+* It is assumed price data doesn't change while the product is in the shopping-cart,
+  and any mismatch results in error response
 
-We respect your time and understand that asking you to give up an hour or so of your personal time for the interview process is a big ask. However, we want to make the process as simple and stress-free as possible, by allowing you to complete the first stage of the process in the comfort of your own home. We will also be using your submission in further stages of the process should you be successful.
-
-## What we are looking for
-**Test Coverage:** The solution should be developed “test-first”, should have good unit tests, and common paths should be covered. Your tests should also be
-self-contained and not rely on external systems to be available to run.
-
-**Simplicity:** We value simplicity as an architectural virtue and a development practice. Solutions should reflect the difficulty of the assigned task, and should not be overly complex. Layers of abstraction, patterns, or architectural features that aren’t called for should not be included.
-
-**Self-explanatory code:** The solution you produce must speak for itself. Multiple paragraphs explaining the solution are a sign that it isn’t straightforward enough to understand purely by reading code, and are not appropriate.
-
-**An understanding of functional programming:** The solution should demonstrate the use of functional programming concepts, in particular, the use of immutable data structures, referential transparency, and the use of monads in dealing with effects.
-
+---
 ## The Problem Statement
 Create a shopping cart package (e.g. `com.siriusxm.example.cart`) that facilitates 2 basic capabilities:
 
