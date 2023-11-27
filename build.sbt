@@ -31,5 +31,10 @@ lazy val root = project
     ),
 
     // Test scope
-    libraryDependencies += "dev.zio" %% "zio-test" % V.zio % Test
+      libraryDependencies ++= Seq(
+      "dev.zio" %% "zio-test" % V.zio % Test,
+      "dev.zio" %% "zio-test-sbt" % V.zio % Test,
+      "dev.zio" %% "zio-test-magnolia" % V.zio % Test
+    ),
+    testFrameworks += new TestFramework("zio.test.sbt.ZTestFramework")
   )
