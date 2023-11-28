@@ -18,17 +18,6 @@ object ShoppingCartSpec extends zio.test.ZIOSpecDefault {
         tax <- cart.taxPayable
         total <- cart.totalPayable
       yield assertTrue((subtotal, tax, total) == (15.02, 1.88, 16.90))
-      /*
-      Add
-      2 × cornflakes
-      @2.52 each
-      Add
-      1 × weetabix
-      @9.98 each
-      Subtotal = 15.02
-      Tax = 1.88
-      Total = 16.90
-       */
     },
 
     test ("property test: random line items")(generateRandomLineItemsTest)
