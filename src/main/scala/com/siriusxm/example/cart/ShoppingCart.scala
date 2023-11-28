@@ -46,16 +46,16 @@ class ShoppingCart(data: Ref[ShoppingCart.Entries]) {
     map <- data.get
     subtot =  map.foldLeft(BigDecimal(0)) {
       case (sum, (title, (price, count))) => sum + BigDecimal(price) * count }
-  yield subtot.setScale(2, RoundingMode)
+  yield subtot.setScale(DecimalScale, RoundingMode)
 
   def taxPayable: UIO[BigDecimal] = subtotal.map(_ * TaxRate)
-    .map(_.setScale(2, RoundingMode))
+    .map(_.setScale(DecimalScale, RoundingMode))
 
   def totalPayable: UIO[BigDecimal] = for
     subtot <- this.subtotal
     tax <- this.taxPayable
   yield (subtot + tax)
-    .setScale(2, RoundingMode)
+    .setScale(DecimalScale, RoundingMode)
 
   def numLines: UIO[Int] = data.get.map(_.size)
 }
